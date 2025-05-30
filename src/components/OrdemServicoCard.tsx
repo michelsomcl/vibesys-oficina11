@@ -1,3 +1,4 @@
+
 import { Settings, CheckCircle, Clock, AlertTriangle, Package, Eye, Pencil, Trash2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -71,6 +72,8 @@ export const OrdemServicoCard = ({ os, onView, onEdit }: OrdemServicoCardProps) 
     return 'N/A'
   }
 
+  const valorComDesconto = os.valor_total - (os.desconto || 0)
+
   return (
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
@@ -102,11 +105,27 @@ export const OrdemServicoCard = ({ os, onView, onEdit }: OrdemServicoCardProps) 
                 </p>
               </div>
             </div>
+
+            {/* Observações */}
+            {os.observacao && (
+              <div className="mt-3 p-3 bg-gray-50 rounded-md">
+                <p className="text-sm"><strong>Observações:</strong></p>
+                <p className="text-sm text-muted-foreground mt-1">{os.observacao}</p>
+              </div>
+            )}
           </div>
           
           <div className="text-right space-y-2">
-            <div className="text-2xl font-bold text-primary">
-              R$ {os.valor_total.toFixed(2).replace('.', ',')}
+            <div className="space-y-1">
+              <div className="text-2xl font-bold text-primary">
+                R$ {os.valor_total.toFixed(2).replace('.', ',')}
+              </div>
+              {(os.desconto || 0) > 0 && (
+                <div className="text-sm">
+                  <p className="text-orange-600">Desconto: R$ {(os.desconto || 0).toFixed(2).replace('.', ',')}</p>
+                  <p className="font-semibold text-green-600">Total: R$ {valorComDesconto.toFixed(2).replace('.', ',')}</p>
+                </div>
+              )}
             </div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={() => onView(os)}>
@@ -189,6 +208,12 @@ export const OrdemServicoCard = ({ os, onView, onEdit }: OrdemServicoCardProps) 
                 <span>Valor Total:</span>
                 <span className="font-medium">R$ {os.valor_total.toFixed(2).replace('.', ',')}</span>
               </div>
+              {(os.desconto || 0) > 0 && (
+                <div className="flex justify-between text-orange-600">
+                  <span>Desconto:</span>
+                  <span className="font-medium">R$ {(os.desconto || 0).toFixed(2).replace('.', ',')}</span>
+                </div>
+              )}
               <div className="flex justify-between text-green-600">
                 <span>Valor Pago:</span>
                 <span className="font-medium">R$ {os.valor_pago.toFixed(2).replace('.', ',')}</span>

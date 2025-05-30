@@ -40,6 +40,18 @@ const Orcamentos = () => {
     deleteOrcamento.mutate(id)
   }
 
+  const getVeiculoInfo = (orcamento: any) => {
+    if (orcamento.veiculo) {
+      return `${orcamento.veiculo.marca} ${orcamento.veiculo.modelo} ${orcamento.veiculo.ano} - ${orcamento.veiculo.placa}`
+    }
+    
+    if (orcamento.cliente && orcamento.cliente.marca && orcamento.cliente.modelo) {
+      return `${orcamento.cliente.marca} ${orcamento.cliente.modelo} ${orcamento.cliente.ano} - ${orcamento.cliente.placa}`
+    }
+    
+    return 'N/A'
+  }
+
   const handleImprimir = (orcamento: any) => {
     // Gerar conteúdo HTML para impressão
     const printContent = `
@@ -65,6 +77,9 @@ const Orcamentos = () => {
           
           <div class="info">
             <p><strong>Cliente:</strong> ${orcamento.cliente?.nome}</p>
+            ${orcamento.cliente?.telefone ? `<p><strong>Telefone:</strong> ${orcamento.cliente.telefone}</p>` : ''}
+            <p><strong>Veículo:</strong> ${getVeiculoInfo(orcamento)}</p>
+            ${orcamento.km_atual ? `<p><strong>Km Atual:</strong> ${orcamento.km_atual}</p>` : ''}
             <p><strong>Data:</strong> ${new Date(orcamento.data_orcamento).toLocaleDateString('pt-BR')}</p>
             <p><strong>Validade:</strong> ${new Date(orcamento.validade).toLocaleDateString('pt-BR')}</p>
             <p><strong>Status:</strong> ${orcamento.status}</p>

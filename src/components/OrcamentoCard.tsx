@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -137,9 +138,15 @@ export const OrcamentoCard = ({ orcamento, onView, onEdit, onDelete, onImprimir 
                 </SelectContent>
               </Select>
             </div>
-            <div className="text-muted-foreground">
+            <div className="text-muted-foreground space-y-1">
               <p><strong>Cliente:</strong> {orcamento.cliente?.nome}</p>
+              {orcamento.cliente?.telefone && (
+                <p><strong>Telefone:</strong> {orcamento.cliente.telefone}</p>
+              )}
               <p><strong>Veículo:</strong> {getVeiculoInfo()}</p>
+              {orcamento.km_atual && (
+                <p><strong>Km Atual:</strong> {orcamento.km_atual}</p>
+              )}
               <p><strong>Data:</strong> {format(new Date(orcamento.data_orcamento), 'dd/MM/yyyy')} | <strong>Validade:</strong> {format(new Date(orcamento.validade), 'dd/MM/yyyy')}</p>
             </div>
           </div>
