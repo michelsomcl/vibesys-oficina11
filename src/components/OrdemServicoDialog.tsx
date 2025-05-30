@@ -57,6 +57,8 @@ export const OrdemServicoDialog = ({ ordemServico, isOpen, onClose }: OrdemServi
     return 'N/A'
   }
 
+  const valorComDesconto = ordemServico.valor_total - (ordemServico.desconto || 0)
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -114,6 +116,10 @@ export const OrdemServicoDialog = ({ ordemServico, isOpen, onClose }: OrdemServi
               <h3 className="font-semibold mb-3">Informações Financeiras</h3>
               <div className="space-y-2 text-sm">
                 <p><strong>Valor Total:</strong> R$ {ordemServico.valor_total.toFixed(2).replace('.', ',')}</p>
+                {(ordemServico.desconto || 0) > 0 && (
+                  <p className="text-orange-600"><strong>Desconto:</strong> R$ {(ordemServico.desconto || 0).toFixed(2).replace('.', ',')}</p>
+                )}
+                <p className="font-medium"><strong>Valor com Desconto:</strong> R$ {valorComDesconto.toFixed(2).replace('.', ',')}</p>
                 <p className="text-green-600"><strong>Valor Pago:</strong> R$ {ordemServico.valor_pago.toFixed(2).replace('.', ',')}</p>
                 <p className="text-red-600"><strong>Valor a Pagar:</strong> R$ {(ordemServico.valor_a_pagar || 0).toFixed(2).replace('.', ',')}</p>
                 <p><strong>Forma de Pagamento:</strong> {ordemServico.forma_pagamento || 'N/A'}</p>
@@ -162,6 +168,17 @@ export const OrdemServicoDialog = ({ ordemServico, isOpen, onClose }: OrdemServi
               )}
             </div>
           </div>
+
+          {/* Observações */}
+          {ordemServico.observacao && (
+            <>
+              <Separator />
+              <div>
+                <h3 className="font-semibold mb-3">Observações</h3>
+                <p className="text-sm bg-gray-50 p-3 rounded">{ordemServico.observacao}</p>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

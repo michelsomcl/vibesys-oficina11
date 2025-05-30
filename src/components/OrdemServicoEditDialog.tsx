@@ -1,8 +1,10 @@
+
 import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useUpdateOrdemServico, OrdemServicoWithDetails } from "@/hooks/useOrdensServico"
 import { Separator } from "@/components/ui/separator"
@@ -18,6 +20,8 @@ export const OrdemServicoEditDialog = ({ ordemServico, isOpen, onClose }: OrdemS
   const [statusServico, setStatusServico] = useState("")
   const [valorPago, setValorPago] = useState("")
   const [formaPagamento, setFormaPagamento] = useState("")
+  const [observacao, setObservacao] = useState("")
+  const [desconto, setDesconto] = useState("")
   
   const updateOrdemServico = useUpdateOrdemServico()
 
@@ -26,6 +30,8 @@ export const OrdemServicoEditDialog = ({ ordemServico, isOpen, onClose }: OrdemS
       setStatusServico(ordemServico.status_servico)
       setValorPago(ordemServico.valor_pago.toString())
       setFormaPagamento(ordemServico.forma_pagamento || "")
+      setObservacao(ordemServico.observacao || "")
+      setDesconto(ordemServico.desconto?.toString() || "0")
     }
   }, [ordemServico])
 
@@ -38,6 +44,8 @@ export const OrdemServicoEditDialog = ({ ordemServico, isOpen, onClose }: OrdemS
         status_servico: statusServico as any,
         valor_pago: parseFloat(valorPago) || 0,
         forma_pagamento: formaPagamento || null,
+        observacao: observacao || null,
+        desconto: parseFloat(desconto) || 0,
       })
       onClose()
     } catch (error) {
@@ -116,11 +124,19 @@ export const OrdemServicoEditDialog = ({ ordemServico, isOpen, onClose }: OrdemS
           <div class="section">
             <h3>Resumo Financeiro</h3>
             <div class="row"><span class="label">Valor Total:</span> R$ ${ordemServico.valor_total.toFixed(2).replace('.', ',')}</div>
+            <div class="row"><span class="label">Desconto:</span> R$ ${(ordemServico.desconto || 0).toFixed(2).replace('.', ',')}</div>
             <div class="row"><span class="label">Valor Pago:</span> R$ ${ordemServico.valor_pago.toFixed(2).replace('.', ',')}</div>
             <div class="row"><span class="label">Valor a Pagar:</span> R$ ${ordemServico.valor_a_pagar?.toFixed(2).replace('.', ',') || '0,00'}</div>
             <div class="row"><span class="label">Forma de Pagamento:</span> ${ordemServico.forma_pagamento || 'N/A'}</div>
             <div class="row"><span class="label">Status:</span> ${ordemServico.status_servico}</div>
           </div>
+
+          ${ordemServico.observacao ? `
+          <div class="section">
+            <h3>Observações</h3>
+            <p>${ordemServico.observacao}</p>
+          </div>
+          ` : ''}
         </body>
       </html>
     `
@@ -135,7 +151,8 @@ export const OrdemServicoEditDialog = ({ ordemServico, isOpen, onClose }: OrdemS
 
   if (!ordemServico) return null
 
-  const valorAPagar = ordemServico.valor_total - parseFloat(valorPago || "0")
+  const valorComDesconto = ordemServico.valor_total - (parseFloat(desconto) || 0)
+  const valorAPagar = valorComDesconto - parseFloat(valorPago || "0")
   const statusPagamentoCalculado = valorAPagar <= 0 ? "Pago" : "Pendente"
 
   return (
@@ -189,6 +206,20 @@ export const OrdemServicoEditDialog = ({ ordemServico, isOpen, onClose }: OrdemS
 
           <Separator />
 
+          {/* Observação */}
+          <div>
+            <Label htmlFor="observacao">Observação</Label>
+            <Textarea
+              id="observacao"
+              value={observacao}
+              onChange={(e) => setObservacao(e.target.value)}
+              placeholder="Digite observações sobre o serviço..."
+              rows={3}
+            />
+          </div>
+
+          <Separator />
+
           {/* Financeiro */}
           <div className="space-y-4">
             <h3 className="font-semibold">Financeiro</h3>
@@ -199,6 +230,29 @@ export const OrdemServicoEditDialog = ({ ordemServico, isOpen, onClose }: OrdemS
                 <Input 
                   value={`R$ ${ordemServico.valor_total.toFixed(2).replace('.', ',')}`}
                   disabled
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="desconto">Desconto</Label>
+                <Input
+                  id="desconto"
+                  type="number"
+                  step="0.01"
+                  value={desconto}
+                  onChange={(e) => setDesconto(e.target.value)}
+                  placeholder="0,00"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <Label>Valor com Desconto</Label>
+                <Input 
+                  value={`R$ ${valorComDesconto.toFixed(2).replace('.', ',')}`}
+                  disabled
+                  className="font-medium"
                 />
               </div>
               

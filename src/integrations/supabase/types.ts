@@ -372,10 +372,12 @@ export type Database = {
           cliente_id: string
           created_at: string
           data_inicio: string
+          desconto: number | null
           forma_pagamento: string | null
           id: string
           km_atual: string | null
           numero: string
+          observacao: string | null
           orcamento_id: string | null
           prazo_conclusao: string
           status_pagamento: Database["public"]["Enums"]["status_pagamento"]
@@ -390,10 +392,12 @@ export type Database = {
           cliente_id: string
           created_at?: string
           data_inicio?: string
+          desconto?: number | null
           forma_pagamento?: string | null
           id?: string
           km_atual?: string | null
           numero: string
+          observacao?: string | null
           orcamento_id?: string | null
           prazo_conclusao: string
           status_pagamento?: Database["public"]["Enums"]["status_pagamento"]
@@ -408,10 +412,12 @@ export type Database = {
           cliente_id?: string
           created_at?: string
           data_inicio?: string
+          desconto?: number | null
           forma_pagamento?: string | null
           id?: string
           km_atual?: string | null
           numero?: string
+          observacao?: string | null
           orcamento_id?: string | null
           prazo_conclusao?: string
           status_pagamento?: Database["public"]["Enums"]["status_pagamento"]
