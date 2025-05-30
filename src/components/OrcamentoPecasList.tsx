@@ -9,6 +9,8 @@ import { useOrcamentoPecas, useCreateOrcamentoPeca, useDeleteOrcamentoPeca } fro
 
 interface OrcamentoPecasListProps {
   orcamentoId?: string
+  localPecas?: LocalPeca[]
+  setLocalPecas?: (pecas: LocalPeca[]) => void
 }
 
 interface LocalPeca {
@@ -19,11 +21,10 @@ interface LocalPeca {
   valor_unitario: number
 }
 
-export const OrcamentoPecasList = ({ orcamentoId }: OrcamentoPecasListProps) => {
+export const OrcamentoPecasList = ({ orcamentoId, localPecas = [], setLocalPecas }: OrcamentoPecasListProps) => {
   const [selectedPecaId, setSelectedPecaId] = useState("")
   const [quantidade, setQuantidade] = useState("")
   const [valorUnitario, setValorUnitario] = useState("")
-  const [localPecas, setLocalPecas] = useState<LocalPeca[]>([])
 
   const { data: pecas = [] } = usePecas()
   const { data: orcamentoPecas = [] } = useOrcamentoPecas(orcamentoId)
@@ -58,7 +59,10 @@ export const OrcamentoPecasList = ({ orcamentoId }: OrcamentoPecasListProps) => 
         quantidade: parseInt(quantidade),
         valor_unitario: parseFloat(valorUnitario),
       }
-      setLocalPecas(prev => [...prev, novaPeca])
+      
+      if (setLocalPecas) {
+        setLocalPecas([...localPecas, novaPeca])
+      }
     }
 
     // Limpar campos
@@ -73,7 +77,9 @@ export const OrcamentoPecasList = ({ orcamentoId }: OrcamentoPecasListProps) => 
       deleteOrcamentoPeca.mutate({ id, orcamentoId })
     } else {
       // Remove da lista local
-      setLocalPecas(prev => prev.filter(p => p.id !== id))
+      if (setLocalPecas) {
+        setLocalPecas(localPecas.filter(p => p.id !== id))
+      }
     }
   }
 

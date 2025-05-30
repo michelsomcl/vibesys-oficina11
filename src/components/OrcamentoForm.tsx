@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react"
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -8,10 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { useClientes } from "@/hooks/useClientes"
 import { useCreateOrcamento, useUpdateOrcamento } from "@/hooks/useOrcamentos"
+import { useCreateOrcamentoPeca } from "@/hooks/useOrcamentoPecas"
+import { useCreateOrcamentoServico } from "@/hooks/useOrcamentoServicos"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { OrcamentoPecasList } from "@/components/OrcamentoPecasList"
 import { OrcamentoServicosList } from "@/components/OrcamentoServicosList"
 import { differenceInDays, parseISO } from "date-fns"
+import { toast } from "sonner"
 
 const orcamentoSchema = z.object({
   cliente_id: z.string().min(1, "Cliente é obrigatório"),
@@ -29,14 +33,34 @@ interface OrcamentoFormProps {
   onCancel?: () => void
 }
 
+interface LocalPeca {
+  id: string
+  peca_id: string
+  peca_nome: string
+  quantidade: number
+  valor_unitario: number
+}
+
+interface LocalServico {
+  id: string
+  servico_id: string
+  servico_nome: string
+  horas: number
+  valor_hora: number
+}
+
 export const OrcamentoForm = ({ orcamento, onSuccess, onCancel }: OrcamentoFormProps) => {
   const [selectedClienteId, setSelectedClienteId] = useState(orcamento?.cliente_id || "")
   const [selectedCliente, setSelectedCliente] = useState<any>(null)
+  const [localPecas, setLocalPecas] = useState<LocalPeca[]>([])
+  const [localServicos, setLocalServicos] = useState<LocalServico[]>([])
   
   const { data: clientes = [] } = useClientes()
   
   const createOrcamento = useCreateOrcamento()
   const updateOrcamento = useUpdateOrcamento()
+  const createOrcamentoPeca = useCreateOrcamentoPeca()
+  const createOrcamentoServico = useCreateOrcamentoServico()
 
   const form = useForm<OrcamentoFormData>({
     resolver: zodResolver(orcamentoSchema),
@@ -84,6 +108,40 @@ export const OrcamentoForm = ({ orcamento, onSuccess, onCancel }: OrcamentoFormP
     }
   }, [orcamento, form])
 
+  const salvarPecasEServicos = async (orcamentoId: string) => {
+    console.log("Salvando peças e serviços para orçamento:", orcamentoId)
+    console.log("Peças locais:", localPecas)
+    console.log("Serviços locais:", localServicos)
+
+    // Salvar peças
+    for (const peca of localPecas) {
+      try {
+        await createOrcamentoPeca.mutateAsync({
+          orcamento_id: orcamentoId,
+          peca_id: peca.peca_id,
+          quantidade: peca.quantidade,
+          valor_unitario: peca.valor_unitario,
+        })
+      } catch (error) {
+        console.error("Erro ao salvar peça:", error)
+      }
+    }
+
+    // Salvar serviços
+    for (const servico of localServicos) {
+      try {
+        await createOrcamentoServico.mutateAsync({
+          orcamento_id: orcamentoId,
+          servico_id: servico.servico_id,
+          horas: servico.horas,
+          valor_hora: servico.valor_hora,
+        })
+      } catch (error) {
+        console.error("Erro ao salvar serviço:", error)
+      }
+    }
+  }
+
   const onSubmit = async (data: OrcamentoFormData) => {
     try {
       console.log("Dados do formulário:", data)
@@ -99,7 +157,8 @@ export const OrcamentoForm = ({ orcamento, onSuccess, onCancel }: OrcamentoFormP
           validade: data.validade,
         })
       } else {
-        await createOrcamento.mutateAsync({
+        // Criar novo orçamento
+        const novoOrcamento = await createOrcamento.mutateAsync({
           cliente_id: data.cliente_id,
           veiculo_id: null,
           km_atual: data.km_atual,
@@ -109,6 +168,14 @@ export const OrcamentoForm = ({ orcamento, onSuccess, onCancel }: OrcamentoFormP
           valor_total: 0,
           status: "Pendente",
         })
+
+        console.log("Orçamento criado:", novoOrcamento)
+
+        // Salvar peças e serviços se houver
+        if (localPecas.length > 0 || localServicos.length > 0) {
+          await salvarPecasEServicos(novoOrcamento.id)
+          toast.success("Orçamento criado com peças e serviços!")
+        }
       }
       onSuccess?.()
     } catch (error) {
@@ -238,11 +305,19 @@ export const OrcamentoForm = ({ orcamento, onSuccess, onCancel }: OrcamentoFormP
 
         <Separator />
 
-        <OrcamentoPecasList orcamentoId={orcamento?.id} />
+        <OrcamentoPecasList 
+          orcamentoId={orcamento?.id} 
+          localPecas={localPecas}
+          setLocalPecas={setLocalPecas}
+        />
 
         <Separator />
 
-        <OrcamentoServicosList orcamentoId={orcamento?.id} />
+        <OrcamentoServicosList 
+          orcamentoId={orcamento?.id}
+          localServicos={localServicos}
+          setLocalServicos={setLocalServicos}
+        />
 
         <div className="flex justify-end gap-2">
           <Button variant="outline" type="button" onClick={onCancel}>

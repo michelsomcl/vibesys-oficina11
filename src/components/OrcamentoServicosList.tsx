@@ -9,6 +9,8 @@ import { useOrcamentoServicos, useCreateOrcamentoServico, useDeleteOrcamentoServ
 
 interface OrcamentoServicosListProps {
   orcamentoId?: string
+  localServicos?: LocalServico[]
+  setLocalServicos?: (servicos: LocalServico[]) => void
 }
 
 interface LocalServico {
@@ -19,11 +21,10 @@ interface LocalServico {
   valor_hora: number
 }
 
-export const OrcamentoServicosList = ({ orcamentoId }: OrcamentoServicosListProps) => {
+export const OrcamentoServicosList = ({ orcamentoId, localServicos = [], setLocalServicos }: OrcamentoServicosListProps) => {
   const [selectedServicoId, setSelectedServicoId] = useState("")
   const [horas, setHoras] = useState("")
   const [valorHora, setValorHora] = useState("")
-  const [localServicos, setLocalServicos] = useState<LocalServico[]>([])
 
   const { data: servicos = [] } = useServicos()
   const { data: orcamentoServicos = [] } = useOrcamentoServicos(orcamentoId)
@@ -58,7 +59,10 @@ export const OrcamentoServicosList = ({ orcamentoId }: OrcamentoServicosListProp
         horas: parseFloat(horas),
         valor_hora: parseFloat(valorHora),
       }
-      setLocalServicos(prev => [...prev, novoServico])
+      
+      if (setLocalServicos) {
+        setLocalServicos([...localServicos, novoServico])
+      }
     }
 
     // Limpar campos
@@ -73,7 +77,9 @@ export const OrcamentoServicosList = ({ orcamentoId }: OrcamentoServicosListProp
       deleteOrcamentoServico.mutate({ id, orcamentoId })
     } else {
       // Remove da lista local
-      setLocalServicos(prev => prev.filter(s => s.id !== id))
+      if (setLocalServicos) {
+        setLocalServicos(localServicos.filter(s => s.id !== id))
+      }
     }
   }
 
